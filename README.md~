@@ -24,6 +24,3 @@ to make a build in write
 1. npm run package-win for windows
 2. npm run package-linux for linux
 3. npm run package-mac for mac
-
-
-NOTE: if you want to make a windows build you must be using windows OS. same with linux and mac.

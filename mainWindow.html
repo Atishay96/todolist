@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shopping List</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+</head>
+<body style="-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+">
+
+  <nav>
+    <div class="nav-wrapper">
+      <a class='brand-logo center' href="#"> Shopping list</a>
+    </div>
+  </nav>
+
+  <ul>
+  </ul>
+  <script>
+    const electron = require('electron');
+    const {ipcRenderer} = electron;
+    document.addEventListener("DOMContentLoaded", function(){
+        ipcRenderer.send("mainWindowLoaded")
+        ipcRenderer.on("resultSent", function(evt, result){
+            let resultEl = document.getElementById("result");
+            console.log(result);
+            for(var i = 0; i < result.length;i++){
+                resultEl.innerHTML += "First Name: " + result[i].FirstName.toString() + "<br/>";
+            }
+        });
+        const ul = document.querySelector('ul');
+        ipcRenderer.on('items', function(e, items){
+          var i = 0;
+          if(items.length){
+            ul.className ='collection';
+          }
+          for( i; i<items.length; i++ ){
+            console.log('new');
+            console.log(items[i]);
+            const li = document.createElement('li');
+            if(items[i].Purchased){
+              li.setAttribute('data', 'strike');
+              li.style['text-decoration'] = 'line-through';
+            }
+            li.className ='collection-item';
+            console.log(li);
+            const itemText = document.createTextNode(items[i].ItemName);
+            li.appendChild(itemText);
+            ul.appendChild(li);
+          }
+        })
+
+        //add items
+        ipcRenderer.on('item:add', function(e, item) {
+          ul.className ='collection';
+          const li = document.createElement('li');
+          li.className ='collection-item';
+          const itemText = document.createTextNode(item);
+          li.appendChild(itemText);
+          ul.appendChild(li);
+        })
+
+        //clear items
+        ipcRenderer.on('item:clear', function(e, item) {      
+          ul.innerHTML = '';
+          if(!ul.children.length){
+            ul.className = ''
+          }
+        })
+
+        //remove items
+        ul.addEventListener('click', removeItem);
+        function removeItem(e){
+          if(!e.target.getAttribute('data')){
+            console.log("data not here");
+            console.log(e.target);
+            ipcRenderer.send('item:strike', e.target.innerHTML);
+            e.target.setAttribute('data', 'strike');
+            e.target.style['text-decoration'] = 'line-through';
+          }else{
+            console.log("DAta present")
+            console.log(e.target);
+              ipcRenderer.send('item:nostrike', e.target.innerHTML);
+              e.target.setAttribute('data', '');
+              e.target.style['text-decoration'] = '';
+          }
+          // ipcRenderer.send('item:delete', e.target.innerHTML);
+          // e.target.remove();
+          // if(!ul.children.length){
+          //   ul.className = ''
+          // }
+        }
+    });
+  </script>
+</body>
+</html>
